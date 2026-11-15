@@ -264,7 +264,7 @@ export function SurveyApp() {
                 ))}
                 {slots.length < MAX_ANSWERS && (
                   <button type="button" className="btn ghost tiny" onClick={addSlot}>
-                    Още отговор
+                    Още един отговор
                   </button>
                 )}
               </div>
@@ -274,7 +274,7 @@ export function SurveyApp() {
                   Назад
                 </button>
                 {step < SURVEY_QUESTIONS.length - 1 ? (
-                  <button type="button" className="btn ghost" onClick={goNext}>
+                  <button type="button" className={current ? "btn primary" : "btn ghost"} onClick={goNext}>
                     {current ? "Напред" : "Пропусни"}
                   </button>
                 ) : (
