@@ -485,6 +485,13 @@ select.dark-field {
   padding: 22px 0 calc(24px + env(safe-area-inset-bottom));
 }
 .survey h1 { font-size: clamp(1.85rem, 8vw, 2.7rem); }
+.q-count {
+  margin: 0;
+  font-family: Spectral, "Times New Roman", serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+  color: var(--gold-2);
+}
 .survey .dock { margin-top: auto; padding-top: 18px; }
 .survey .follow {
   display: flex;

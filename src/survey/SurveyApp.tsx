@@ -40,6 +40,13 @@ export function SurveyApp() {
   }, [draft, done])
 
   const step = draft.step
+  const filled = draft.answers.filter((item) => item.trim()).length
+  const current = (draft.answers[step] ?? "").trim()
+
+  function goNext() {
+    if (step >= SURVEY_QUESTIONS.length - 1) return
+    setDraft({ ...draft, step: step + 1 })
+  }
   const question = step >= 0 ? SURVEY_QUESTIONS[step] : undefined
 
   async function send() {
@@ -53,7 +60,10 @@ export function SurveyApp() {
           handle: draft.handle,
           revolut: draft.revolut,
           accepted: draft.accepted,
-          answers: SURVEY_QUESTIONS.map((item, index) => ({ id: item.id, text: draft.answers[index] ?? "" })),
+          answers: SURVEY_QUESTIONS.flatMap((item, index) => {
+            const text = (draft.answers[index] ?? "").trim()
+            return text ? [{ id: item.id, text }] : []
+          }),
         }),
       })
       const text = await response.text()
@@ -104,7 +114,7 @@ export function SurveyApp() {
           <>
             <h1>Дванайсет въпроса. 20€.</h1>
             <p className="lede">
-              Пиши първото, което ти дойде. Никой друг не вижда отговорите. Един човек получава 20€ по Revolut. Ако си ти, ще ти пиша в Instagram.
+              Пиши първото, което ти дойде. Можеш да спреш когато искаш. Колкото повече отговори дадеш, толкова по-голям е шансът. Ако те избера, ще ти пиша в Instagram.
             </p>
             <a className="btn primary follow" href="https://www.instagram.com/popitahme100choveka/" target="_blank" rel="noopener noreferrer">
               Последвай @popitahme100choveka
@@ -151,7 +161,7 @@ export function SurveyApp() {
                   <p>Анкетата е на @popitahme100choveka.</p>
                   <p>Пазя Instagram името, Revolut (tag или телефон) и отговорите.</p>
                   <p>
-                    Ползвам ги, за да видя най-честите отговори за играта и да избера един човек, на когото пращам 20€ по Revolut. Ако спечелиш, пиша ти в Instagram, затова последвай @popitahme100choveka. Аз избирам. Няма код и не всеки получава пари.
+                    Ползвам ги, за да видя най-честите отговори за играта и да избера един човек, на когото пращам 20€ по Revolut. Колкото повече отговори дадеш, толкова по-голям е шансът. Ако спечелиш, пиша ти в Instagram, затова последвай @popitahme100choveka. Аз избирам. Няма код и не всеки получава пари.
                   </p>
                   <p>Листчето с името и Revolut го виждам само аз. Не го пускам публично, не го ползвам за реклама и не го давам на други.</p>
                   <p>
@@ -196,9 +206,10 @@ export function SurveyApp() {
         ) : (
           question && (
             <>
-              <p className="whisper">
-                Въпрос {step + 1} от {SURVEY_QUESTIONS.length}
+              <p className="q-count">
+                {step + 1}/{SURVEY_QUESTIONS.length}
               </p>
+              <p className="whisper">Дадени {filled}. Колкото повече, толкова по-голям шанс.</p>
               <h1>{question.text}</h1>
               <label className="field">
                 <span>Първият ти отговор</span>
@@ -206,14 +217,17 @@ export function SurveyApp() {
                   value={draft.answers[step] ?? ""}
                   autoFocus
                   maxLength={80}
-                  enterKeyHint={step === SURVEY_QUESTIONS.length - 1 ? "send" : "next"}
+                  enterKeyHint={filled >= 3 ? "send" : "next"}
                   onChange={(event) => setAnswer(event.target.value)}
                   onKeyDown={(event) => {
                     if (event.key !== "Enter") return
                     event.preventDefault()
-                    if (!(draft.answers[step] ?? "").trim()) return
-                    if (step === SURVEY_QUESTIONS.length - 1) void send()
-                    else setDraft({ ...draft, step: step + 1 })
+                    if (!current) return
+                    if (step === SURVEY_QUESTIONS.length - 1) {
+                      void send()
+                      return
+                    }
+                    goNext()
                   }}
                 />
               </label>
@@ -222,20 +236,14 @@ export function SurveyApp() {
                 <button type="button" className="btn ghost" onClick={() => setDraft({ ...draft, step: step - 1 })}>
                   Назад
                 </button>
-                {step < SURVEY_QUESTIONS.length - 1 ? (
-                  <button
-                    type="button"
-                    className="btn primary"
-                    disabled={!(draft.answers[step] ?? "").trim()}
-                    onClick={() => setDraft({ ...draft, step: step + 1 })}
-                  >
-                    Напред
-                  </button>
-                ) : (
-                  <button type="button" className="btn primary" disabled={busy || !(draft.answers[step] ?? "").trim()} onClick={() => void send()}>
-                    {busy ? "Праща се…" : "Прати"}
+                {step < SURVEY_QUESTIONS.length - 1 && (
+                  <button type="button" className="btn ghost" onClick={goNext}>
+                    {current ? "Напред" : "Пропусни"}
                   </button>
                 )}
+                <button type="button" className="btn primary" disabled={busy} onClick={() => void send()}>
+                  {busy ? "Праща се…" : "Прати"}
+                </button>
               </div>
             </>
           )

@@ -122,14 +122,20 @@ export function AdminApp() {
                 <li key={row.id}>
                   <div>
                     <b>@{row.handle}</b>
-                    <small>{row.revolut || "няма Revolut"}</small>
+                    <small>
+                      {row.answers.length} {row.answers.length === 1 ? "отговор" : "отговора"} · {row.revolut || "няма Revolut"}
+                    </small>
                     <ol className="slip-answers">
-                      {SURVEY_QUESTIONS.map((question, index) => (
-                        <li key={question.id}>
-                          <span>{index + 1}</span>
-                          {row.answers.find((answer) => answer.id === question.id)?.text}
-                        </li>
-                      ))}
+                      {SURVEY_QUESTIONS.flatMap((question, index) => {
+                        const text = row.answers.find((answer) => answer.id === question.id)?.text
+                        if (!text) return []
+                        return [
+                          <li key={question.id}>
+                            <span>{index + 1}</span>
+                            {text}
+                          </li>,
+                        ]
+                      })}
                     </ol>
                   </div>
                   <button

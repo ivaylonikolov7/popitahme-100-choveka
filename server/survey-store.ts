@@ -84,7 +84,7 @@ export async function addSubmission(body: unknown): Promise<{ ok: true; code: st
   const answers: SurveyAnswer[] = []
   for (const question of SURVEY_QUESTIONS) {
     const text = byId.get(question.id) ?? ""
-    if (text.length < 1) return { ok: false, error: "Попълни всичките въпроси." }
+    if (text.length < 1) continue
     answers.push({ id: question.id, text })
   }
   const submission = { id: crypto.randomUUID(), handle, revolut, answers }
