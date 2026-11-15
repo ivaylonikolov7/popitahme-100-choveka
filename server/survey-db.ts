@@ -23,13 +23,19 @@ let pool: Pool | undefined
 let ready: Promise<void> | undefined
 
 export function databaseUrl() {
-  const url = process.env.POSTGRES_URL?.trim() || process.env.DATABASE_URL?.trim() || ""
+  const direct = process.env.POSTGRES_URL_NON_POOLING?.trim()
+  const pooled = process.env.POSTGRES_URL?.trim() || process.env.DATABASE_URL?.trim() || ""
+  const url = direct || pooled
   if (!url) throw new Error("Липсва POSTGRES_URL.")
   return url
 }
 
 function usesNeon(url: string) {
   return url.includes(".neon.tech")
+}
+
+function connectionString(url: string) {
+  return url.replace(/([?&])sslmode=[^&]*&?/g, "$1").replace(/[?&]$/, "")
 }
 
 async function query<T>(text: string, params: unknown[] = []): Promise<T[]> {
@@ -39,10 +45,10 @@ async function query<T>(text: string, params: unknown[] = []): Promise<T[]> {
     return (await sql.query(text, params)) as T[]
   }
   pool ??= new Pool({
-    connectionString: url,
+    connectionString: connectionString(url),
     max: 1,
     idleTimeoutMillis: 10_000,
-    ssl: url.includes("localhost") || url.includes("127.0.0.1") ? undefined : { rejectUnauthorized: false },
+    ssl: { rejectUnauthorized: false },
   })
   const result = await pool.query<T>(text, params)
   return result.rows
