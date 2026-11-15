@@ -93,14 +93,22 @@ export function SurveyApp() {
         {done ? (
           <>
             <h1>Готово.</h1>
-            <p className="lede">Листчето е прието. Ако те изберем, 20€ тръгват по Revolut, който написа. Отговорите остават само при водещия.</p>
+            <p className="lede">
+              Листчето е прието. Ако те избера, ще ти пиша в Instagram. Последвай профила, за да мога да ти пратя съобщението. 20€ тръгват по Revolut, който написа.
+            </p>
+            <a className="btn primary follow" href="https://www.instagram.com/popitahme100choveka/" target="_blank" rel="noopener noreferrer">
+              Последвай @popitahme100choveka
+            </a>
           </>
         ) : step < 0 ? (
           <>
             <h1>Дванайсет въпроса. 20€.</h1>
             <p className="lede">
-              Пиши първото, което ти дойде. Никой друг не вижда отговорите. Един човек, минал всичките, получава 20€ по Revolut, след като събирането приключи.
+              Пиши първото, което ти дойде. Никой друг не вижда отговорите. Един човек получава 20€ по Revolut. Ако си ти, ще ти пиша в Instagram.
             </p>
+            <a className="btn primary follow" href="https://www.instagram.com/popitahme100choveka/" target="_blank" rel="noopener noreferrer">
+              Последвай @popitahme100choveka
+            </a>
             <label className="field">
               <span>Име или @ в Instagram</span>
               <input
@@ -143,7 +151,7 @@ export function SurveyApp() {
                   <p>Анкетата е на @popitahme100choveka.</p>
                   <p>Пазя Instagram името, Revolut (tag или телефон) и отговорите.</p>
                   <p>
-                    Ползвам ги, за да видя най-честите отговори за играта и да избера един човек, на когото пращам 20€ по Revolut. Аз избирам. Няма код и не всеки получава пари.
+                    Ползвам ги, за да видя най-честите отговори за играта и да избера един човек, на когото пращам 20€ по Revolut. Ако спечелиш, пиша ти в Instagram, затова последвай @popitahme100choveka. Аз избирам. Няма код и не всеки получава пари.
                   </p>
                   <p>Листчето с името и Revolut го виждам само аз. Не го пускам публично, не го ползвам за реклама и не го давам на други.</p>
                   <p>
