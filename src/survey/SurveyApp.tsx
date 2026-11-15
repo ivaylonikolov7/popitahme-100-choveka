@@ -25,16 +25,16 @@ export function SurveyApp() {
   const [draft, setDraft] = useState<Draft>(loadDraft)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
-  const [code, setCode] = useState("")
+  const [done, setDone] = useState(false)
 
   useEffect(() => {
     document.title = "Барски дуел · Анкета"
   }, [])
 
   useEffect(() => {
-    if (code) return
+    if (done) return
     sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
-  }, [draft, code])
+  }, [draft, done])
 
   const step = draft.step
   const question = step >= 0 ? SURVEY_QUESTIONS[step] : undefined
@@ -60,12 +60,12 @@ export function SurveyApp() {
         setError("Сървърът не прие листчето. Опитай пак след малко.")
         return
       }
-      if (!response.ok || !body.code) {
+      if (!response.ok || body.error) {
         setError(body.error || "Не мина. Опитай пак.")
         return
       }
       sessionStorage.removeItem(DRAFT_KEY)
-      setCode(body.code)
+      setDone(true)
     } catch {
       setError("Няма връзка. Отвори линка още веднъж.")
     } finally {
@@ -86,12 +86,10 @@ export function SurveyApp() {
     <div className="app">
       <main className="survey">
         <p className="eyebrow">Барски дуел</p>
-        {code ? (
+        {done ? (
           <>
-            <h1>Влезе в томболата.</h1>
-            <p className="lede">Запази този код. Ако излезе твой, 20€ тръгват по Revolut след края на събирането. Отговорите остават само при водещия.</p>
-            <div className="ticket">{code}</div>
-            <p className="whisper">Направи скрийншот на кода. Парите се пращат ръчно, едва когато анкетата спре.</p>
+            <h1>Готово.</h1>
+            <p className="lede">Листчето е прието. Ако те изберем, 20€ тръгват по Revolut, който написа. Отговорите остават само при водещия.</p>
           </>
         ) : step < 0 ? (
           <>

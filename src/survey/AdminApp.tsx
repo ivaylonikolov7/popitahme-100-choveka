@@ -38,7 +38,6 @@ export function AdminApp() {
   const [unlocked, setUnlocked] = useState(false)
   const [error, setError] = useState("")
   const [rows, setRows] = useState<Submission[]>([])
-  const [winner, setWinner] = useState<Submission | null>(null)
 
   useEffect(() => {
     document.title = "Барски дуел · Отговори"
@@ -112,29 +111,15 @@ export function AdminApp() {
               Линк за сторито: <a href={link}>{link}</a>
             </p>
             <p className="banner gold">
-              {rows.length === 0 ? "Още няма листчета." : `${rows.length} ${rows.length === 1 ? "листче" : "листчета"}. Един код печели 20€ по Revolut. Прати ги ръчно, като спреш събирането.`}
+              {rows.length === 0
+                ? "Още няма листчета."
+                : `${rows.length} ${rows.length === 1 ? "листче" : "листчета"}. Избери човек по Instagram и Revolut и прати 20€ ръчно.`}
             </p>
-            {rows.length > 0 && (
-              <button
-                type="button"
-                className="btn primary"
-                onClick={() => setWinner(rows[Math.floor(Math.random() * rows.length)] ?? null)}
-              >
-                Изтегли победител
-              </button>
-            )}
-            {winner && (
-              <p className="ticket small">
-                @{winner.handle} · {winner.code}
-                <small>{winner.revolut || "няма Revolut"}</small>
-              </p>
-            )}
-            <h2>Кодове</h2>
+            <h2>Хора</h2>
             <ul className="entries">
               {rows.map((row) => (
                 <li key={row.id}>
                   <b>@{row.handle}</b>
-                  <span>{row.code}</span>
                   <small>{row.revolut || "няма Revolut"}</small>
                 </li>
               ))}
