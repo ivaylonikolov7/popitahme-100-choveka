@@ -1,5 +1,5 @@
 import type { Connect, Plugin } from "vite"
-import { handleSurvey } from "./survey-http.ts"
+import { handleSurvey } from "./survey-http.js"
 
 function clientIp(req: Connect.IncomingMessage) {
   const forwarded = req.headers["x-forwarded-for"]

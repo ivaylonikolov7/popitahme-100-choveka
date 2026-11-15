@@ -52,7 +52,14 @@ export function SurveyApp() {
           answers: SURVEY_QUESTIONS.map((item, index) => ({ id: item.id, text: draft.answers[index] ?? "" })),
         }),
       })
-      const body = (await response.json()) as { code?: string; error?: string }
+      const text = await response.text()
+      let body: { code?: string; error?: string } = {}
+      try {
+        body = JSON.parse(text) as { code?: string; error?: string }
+      } catch {
+        setError("Сървърът не прие листчето. Опитай пак след малко.")
+        return
+      }
       if (!response.ok || !body.code) {
         setError(body.error || "Не мина. Опитай пак.")
         return

@@ -1,4 +1,4 @@
-import { handleSurvey } from "../server/survey-http.ts"
+import { handleSurvey } from "../server/survey-http.js"
 
 type NodeRequest = {
   method?: string
@@ -41,9 +41,16 @@ async function readJson(req: NodeRequest) {
 }
 
 export default async function handler(req: NodeRequest, res: NodeResponse) {
-  const body = req.method === "POST" ? await readJson(req) : null
-  const result = await handleSurvey({ method: req.method ?? "GET", adminHeader: header(req), body, ip: clientIp(req) })
-  res.status(result.status)
-  res.setHeader("cache-control", "no-store")
-  res.json(result.body)
+  try {
+    const body = req.method === "POST" ? await readJson(req) : null
+    const result = await handleSurvey({ method: req.method ?? "GET", adminHeader: header(req), body, ip: clientIp(req) })
+    res.status(result.status)
+    res.setHeader("cache-control", "no-store")
+    res.json(result.body)
+  } catch (error) {
+    console.error(error)
+    res.status(500)
+    res.setHeader("cache-control", "no-store")
+    res.json({ error: "Листчето не мина." })
+  }
 }

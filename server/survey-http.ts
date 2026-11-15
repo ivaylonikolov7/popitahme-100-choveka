@@ -1,4 +1,4 @@
-import { addSubmission, adminKey, keysMatch, readAll } from "./survey-store.ts"
+import { addSubmission, adminKey, keysMatch, readAll } from "./survey-store.js"
 
 const hits = new Map<string, number[]>()
 

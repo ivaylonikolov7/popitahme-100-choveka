@@ -1,9 +1,9 @@
 import crypto from "node:crypto"
 import fs from "node:fs"
 import path from "node:path"
-import { SURVEY_QUESTIONS } from "../src/survey/questions.ts"
-import { cleanRevolut, revolutOk } from "../src/survey/revolut.ts"
-import { insertSubmission, isUniqueViolation, readSubmissions } from "./survey-db.ts"
+import { SURVEY_QUESTIONS } from "../src/survey/questions.js"
+import { cleanRevolut, revolutOk } from "../src/survey/revolut.js"
+import { insertSubmission, isUniqueViolation, readSubmissions } from "./survey-db.js"
 
 const dir = path.resolve("data")
 const keyFile = path.join(dir, "admin-key.txt")

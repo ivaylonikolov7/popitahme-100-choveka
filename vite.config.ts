@@ -1,6 +1,6 @@
 import { defineConfig, loadEnv } from "vite"
 import react from "@vitejs/plugin-react"
-import { surveyApi } from "./server/survey-plugin.ts"
+import { surveyApi } from "./server/survey-plugin.js"
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "")
