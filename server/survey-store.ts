@@ -74,18 +74,23 @@ export async function addSubmission(body: unknown): Promise<{ ok: true; code: st
   if ((body as { accepted?: unknown }).accepted !== true) return { ok: false, error: "Приеми бележката за данните." }
   const raw = (body as { answers?: unknown }).answers
   if (!Array.isArray(raw)) return { ok: false, error: "Липсват отговорите." }
-  const byId = new Map<string, string>()
+  const known = new Set<string>(SURVEY_QUESTIONS.map((question) => question.id))
+  const counts = new Map<string, number>()
+  const seen = new Set<string>()
+  const answers: SurveyAnswer[] = []
   for (const item of raw) {
     if (!item || typeof item !== "object") continue
     const id = (item as { id?: unknown }).id
-    if (typeof id !== "string") continue
-    byId.set(id, cleanAnswer((item as { text?: unknown }).text))
-  }
-  const answers: SurveyAnswer[] = []
-  for (const question of SURVEY_QUESTIONS) {
-    const text = byId.get(question.id) ?? ""
+    if (typeof id !== "string" || !known.has(id)) continue
+    const text = cleanAnswer((item as { text?: unknown }).text)
     if (text.length < 1) continue
-    answers.push({ id: question.id, text })
+    const used = counts.get(id) ?? 0
+    if (used >= 8) continue
+    const key = `${id}\0${text.toLocaleLowerCase("bg")}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    counts.set(id, used + 1)
+    answers.push({ id, text })
   }
   const submission = { id: crypto.randomUUID(), handle, revolut, answers }
   for (let attempt = 0; attempt < 5; attempt += 1) {

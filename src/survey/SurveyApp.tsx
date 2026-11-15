@@ -4,15 +4,28 @@ import { cleanRevolut, revolutOk } from "./revolut"
 
 const DRAFT_KEY = "bar-feuds-survey-draft"
 
-type Draft = { handle: string; revolut: string; accepted: boolean; answers: string[]; step: number }
+const MAX_ANSWERS = 8
+
+type Draft = { handle: string; revolut: string; accepted: boolean; answers: string[][]; step: number }
+
+function blankAnswers() {
+  return SURVEY_QUESTIONS.map(() => [""])
+}
 
 function loadDraft(): Draft {
-  const empty = { handle: "", revolut: "", accepted: false, answers: SURVEY_QUESTIONS.map(() => ""), step: -1 }
+  const empty = { handle: "", revolut: "", accepted: false, answers: blankAnswers(), step: -1 }
   try {
     const raw = sessionStorage.getItem(DRAFT_KEY)
     if (!raw) return empty
-    const data = JSON.parse(raw) as Draft
-    const answers = SURVEY_QUESTIONS.map((_, index) => data.answers?.[index] ?? "")
+    const data = JSON.parse(raw) as { handle?: string; revolut?: string; accepted?: boolean; answers?: unknown[]; step?: number }
+    const answers = SURVEY_QUESTIONS.map((_, index) => {
+      const item = data.answers?.[index]
+      if (Array.isArray(item)) {
+        const texts = item.filter((value): value is string => typeof value === "string").slice(0, MAX_ANSWERS)
+        return texts.length > 0 ? texts : [""]
+      }
+      return typeof item === "string" ? [item] : [""]
+    })
     const revolut = data.revolut ?? ""
     const accepted = data.accepted === true
     const ready = accepted && revolutOk(cleanRevolut(revolut))
@@ -40,8 +53,9 @@ export function SurveyApp() {
   }, [draft, done])
 
   const step = draft.step
-  const filled = draft.answers.filter((item) => item.trim()).length
-  const current = (draft.answers[step] ?? "").trim()
+  const slots = draft.answers[step] ?? [""]
+  const filled = draft.answers.reduce((count, row) => count + row.filter((item) => item.trim()).length, 0)
+  const current = slots.some((item) => item.trim())
 
   function goNext() {
     if (step >= SURVEY_QUESTIONS.length - 1) return
@@ -60,10 +74,12 @@ export function SurveyApp() {
           handle: draft.handle,
           revolut: draft.revolut,
           accepted: draft.accepted,
-          answers: SURVEY_QUESTIONS.flatMap((item, index) => {
-            const text = (draft.answers[index] ?? "").trim()
-            return text ? [{ id: item.id, text }] : []
-          }),
+          answers: SURVEY_QUESTIONS.flatMap((item, index) =>
+            (draft.answers[index] ?? []).flatMap((value) => {
+              const text = value.trim()
+              return text ? [{ id: item.id, text }] : []
+            }),
+          ),
         }),
       })
       const text = await response.text()
@@ -87,13 +103,25 @@ export function SurveyApp() {
     }
   }
 
-  function setAnswer(text: string) {
+  function setSlot(index: number, text: string) {
     setDraft((current) => {
-      const answers = [...current.answers]
-      answers[current.step] = text
+      const answers = current.answers.map((row) => [...row])
+      const row = answers[current.step] ?? [""]
+      row[index] = text
+      answers[current.step] = row
       return { ...current, answers }
     })
     setError("")
+  }
+
+  function addSlot() {
+    setDraft((current) => {
+      const answers = current.answers.map((row) => [...row])
+      const row = answers[current.step] ?? [""]
+      if (row.length >= MAX_ANSWERS) return current
+      answers[current.step] = [...row, ""]
+      return { ...current, answers }
+    })
   }
 
   return (
@@ -112,9 +140,9 @@ export function SurveyApp() {
           </>
         ) : step < 0 ? (
           <>
-            <h1>Дванайсет въпроса. 20€.</h1>
+            <h1>Дванайсет въпроса. 20€ за един човек.</h1>
             <p className="lede">
-              Пиши първото, което ти дойде. Можеш да спреш когато искаш. Колкото повече отговори дадеш, толкова по-голям е шансът. Ако те избера, ще ти пиша в Instagram.
+              На всеки въпрос можеш да напишеш няколко отговора. Можеш да спреш когато искаш. Колкото повече отговори дадеш, толкова по-голям е шансът. Ако те избера, ще ти пиша в Instagram.
             </p>
             <a className="btn primary follow" href="https://www.instagram.com/popitahme100choveka/" target="_blank" rel="noopener noreferrer">
               Последвай @popitahme100choveka
@@ -211,39 +239,49 @@ export function SurveyApp() {
               </p>
               <p className="whisper">Дадени {filled}. Колкото повече, толкова по-голям шанс.</p>
               <h1>{question.text}</h1>
-              <label className="field">
-                <span>Първият ти отговор</span>
-                <input
-                  value={draft.answers[step] ?? ""}
-                  autoFocus
-                  maxLength={80}
-                  enterKeyHint={filled >= 3 ? "send" : "next"}
-                  onChange={(event) => setAnswer(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key !== "Enter") return
-                    event.preventDefault()
-                    if (!current) return
-                    if (step === SURVEY_QUESTIONS.length - 1) {
-                      void send()
-                      return
-                    }
-                    goNext()
-                  }}
-                />
-              </label>
+              <div className="answer-stack">
+                {slots.map((value, index) => (
+                  <label className="field" key={index}>
+                    <span>Отговор {index + 1}</span>
+                    <input
+                      value={value}
+                      autoFocus={index === slots.length - 1}
+                      maxLength={80}
+                      enterKeyHint="next"
+                      onChange={(event) => setSlot(index, event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key !== "Enter") return
+                        event.preventDefault()
+                        if (value.trim() && slots.length < MAX_ANSWERS && index === slots.length - 1) {
+                          addSlot()
+                          return
+                        }
+                        if (step === SURVEY_QUESTIONS.length - 1) return
+                        goNext()
+                      }}
+                    />
+                  </label>
+                ))}
+                {slots.length < MAX_ANSWERS && (
+                  <button type="button" className="btn ghost tiny" onClick={addSlot}>
+                    Още отговор
+                  </button>
+                )}
+              </div>
               {error && <p className="banner">{error}</p>}
               <div className="dock">
                 <button type="button" className="btn ghost" onClick={() => setDraft({ ...draft, step: step - 1 })}>
                   Назад
                 </button>
-                {step < SURVEY_QUESTIONS.length - 1 && (
+                {step < SURVEY_QUESTIONS.length - 1 ? (
                   <button type="button" className="btn ghost" onClick={goNext}>
                     {current ? "Напред" : "Пропусни"}
                   </button>
+                ) : (
+                  <button type="button" className="btn primary" disabled={busy} onClick={() => void send()}>
+                    {busy ? "Праща се…" : "Прати"}
+                  </button>
                 )}
-                <button type="button" className="btn primary" disabled={busy} onClick={() => void send()}>
-                  {busy ? "Праща се…" : "Прати"}
-                </button>
               </div>
             </>
           )

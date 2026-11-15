@@ -499,6 +499,8 @@ select.dark-field {
   margin-top: 18px;
   text-align: center;
 }
+.answer-stack { display: grid; }
+.answer-stack .btn { justify-self: start; margin-top: 12px; }
 .field { display: grid; gap: 8px; margin: 18px 0 0; }
 .field > span { color: var(--cream-dim); font-size: 0.92rem; }
 .field input {

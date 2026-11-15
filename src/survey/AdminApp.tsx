@@ -23,12 +23,13 @@ function fold(text: string) {
 function tally(submissions: Submission[], questionId: string) {
   const groups = new Map<string, { label: string; count: number }>()
   for (const row of submissions) {
-    const text = row.answers.find((answer) => answer.id === questionId)?.text ?? ""
-    if (!text) continue
-    const key = fold(text)
-    const current = groups.get(key)
-    if (current) current.count += 1
-    else groups.set(key, { label: text, count: 1 })
+    for (const answer of row.answers) {
+      if (answer.id !== questionId || !answer.text) continue
+      const key = fold(answer.text)
+      const current = groups.get(key)
+      if (current) current.count += 1
+      else groups.set(key, { label: answer.text, count: 1 })
+    }
   }
   return [...groups.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "bg"))
 }
@@ -127,12 +128,12 @@ export function AdminApp() {
                     </small>
                     <ol className="slip-answers">
                       {SURVEY_QUESTIONS.flatMap((question, index) => {
-                        const text = row.answers.find((answer) => answer.id === question.id)?.text
-                        if (!text) return []
+                        const texts = row.answers.filter((answer) => answer.id === question.id).map((answer) => answer.text)
+                        if (texts.length === 0) return []
                         return [
                           <li key={question.id}>
                             <span>{index + 1}</span>
-                            {text}
+                            {texts.join(" · ")}
                           </li>,
                         ]
                       })}
