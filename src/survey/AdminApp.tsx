@@ -38,6 +38,7 @@ export function AdminApp() {
   const [unlocked, setUnlocked] = useState(false)
   const [error, setError] = useState("")
   const [rows, setRows] = useState<Submission[]>([])
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null)
 
   useEffect(() => {
     document.title = "Барски дуел · Отговори"
@@ -119,8 +120,44 @@ export function AdminApp() {
             <ul className="entries">
               {rows.map((row) => (
                 <li key={row.id}>
-                  <b>@{row.handle}</b>
-                  <small>{row.revolut || "няма Revolut"}</small>
+                  <div>
+                    <b>@{row.handle}</b>
+                    <small>{row.revolut || "няма Revolut"}</small>
+                    <ol className="slip-answers">
+                      {SURVEY_QUESTIONS.map((question, index) => (
+                        <li key={question.id}>
+                          <span>{index + 1}</span>
+                          {row.answers.find((answer) => answer.id === question.id)?.text}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn tiny danger"
+                    onClick={() => {
+                      if (pendingDelete !== row.id) {
+                        setPendingDelete(row.id)
+                        return
+                      }
+                      void (async () => {
+                        const response = await fetch("/api/anketa", {
+                          method: "DELETE",
+                          headers: { "content-type": "application/json", "x-admin-key": password },
+                          body: JSON.stringify({ id: row.id }),
+                        })
+                        const body = (await response.json()) as { error?: string }
+                        if (!response.ok) {
+                          setError(body.error || "Не можах да махна листчето.")
+                          return
+                        }
+                        setPendingDelete(null)
+                        setRows((current) => current.filter((item) => item.id !== row.id))
+                      })()
+                    }}
+                  >
+                    {pendingDelete === row.id ? "Махни го" : "Не става"}
+                  </button>
                 </li>
               ))}
             </ul>

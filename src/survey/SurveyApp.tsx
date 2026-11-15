@@ -4,18 +4,20 @@ import { cleanRevolut, revolutOk } from "./revolut"
 
 const DRAFT_KEY = "bar-feuds-survey-draft"
 
-type Draft = { handle: string; revolut: string; answers: string[]; step: number }
+type Draft = { handle: string; revolut: string; accepted: boolean; answers: string[]; step: number }
 
 function loadDraft(): Draft {
-  const empty = { handle: "", revolut: "", answers: SURVEY_QUESTIONS.map(() => ""), step: -1 }
+  const empty = { handle: "", revolut: "", accepted: false, answers: SURVEY_QUESTIONS.map(() => ""), step: -1 }
   try {
     const raw = sessionStorage.getItem(DRAFT_KEY)
     if (!raw) return empty
     const data = JSON.parse(raw) as Draft
     const answers = SURVEY_QUESTIONS.map((_, index) => data.answers?.[index] ?? "")
     const revolut = data.revolut ?? ""
-    const step = revolutOk(cleanRevolut(revolut)) ? (data.step ?? -1) : -1
-    return { handle: data.handle ?? "", revolut, answers, step }
+    const accepted = data.accepted === true
+    const ready = accepted && revolutOk(cleanRevolut(revolut))
+    const step = ready ? (data.step ?? -1) : -1
+    return { handle: data.handle ?? "", revolut, accepted, answers, step }
   } catch {
     return empty
   }
@@ -26,6 +28,7 @@ export function SurveyApp() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
   const [done, setDone] = useState(false)
+  const [termsOpen, setTermsOpen] = useState(false)
 
   useEffect(() => {
     document.title = "Барски дуел · Анкета"
@@ -49,6 +52,7 @@ export function SurveyApp() {
         body: JSON.stringify({
           handle: draft.handle,
           revolut: draft.revolut,
+          accepted: draft.accepted,
           answers: SURVEY_QUESTIONS.map((item, index) => ({ id: item.id, text: draft.answers[index] ?? "" })),
         }),
       })
@@ -116,11 +120,65 @@ export function SurveyApp() {
                 onChange={(event) => setDraft({ ...draft, revolut: event.target.value })}
               />
             </label>
+            <label className="consent">
+              <input
+                type="checkbox"
+                checked={draft.accepted}
+                onChange={(event) => setDraft({ ...draft, accepted: event.target.checked })}
+              />
+              <button type="button" className="terms-link" onClick={() => setTermsOpen(true)}>
+                Съгласявам се с условията за ползване
+              </button>
+            </label>
+            {termsOpen && (
+              <div className="terms-backdrop" onClick={() => setTermsOpen(false)}>
+                <div
+                  className="terms-pop"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="terms-title"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <h2 id="terms-title">Условия за ползване</h2>
+                  <p>Анкетата е на @popitahme100choveka.</p>
+                  <p>Пазя Instagram името, Revolut (tag или телефон) и отговорите.</p>
+                  <p>
+                    Ползвам ги, за да видя най-честите отговори за играта и да избера един човек, на когото пращам 20€ по Revolut. Аз избирам. Няма код и не всеки получава пари.
+                  </p>
+                  <p>Листчето с името и Revolut го виждам само аз. Не го пускам публично, не го ползвам за реклама и не го давам на други.</p>
+                  <p>
+                    Самите отговори, без Instagram и без Revolut, ще ги ползвам после в барската игра. Там се вижда само кой отговор колко често е писан, не кой го е написал.
+                  </p>
+                  <p>
+                    Instagram името и Revolut трия, след като парите са изпратени. Ако отговорите са написани само колкото да се участва, мога да махна цялото листче и то не влиза в играта. Ако искаш твоя запис да изтрия или да ти го покажа по-рано, пиши на @popitahme100choveka.
+                  </p>
+                  <div className="dock">
+                    <button type="button" className="btn ghost" onClick={() => setTermsOpen(false)}>
+                      Затвори
+                    </button>
+                    <button
+                      type="button"
+                      className="btn primary"
+                      onClick={() => {
+                        setDraft({ ...draft, accepted: true })
+                        setTermsOpen(false)
+                      }}
+                    >
+                      Съгласявам се
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="dock">
               <button
                 type="button"
                 className="btn primary"
-                disabled={draft.handle.trim().replace(/^@+/, "").length < 2 || !revolutOk(cleanRevolut(draft.revolut))}
+                disabled={
+                  !draft.accepted ||
+                  draft.handle.trim().replace(/^@+/, "").length < 2 ||
+                  !revolutOk(cleanRevolut(draft.revolut))
+                }
                 onClick={() => setDraft({ ...draft, step: 0 })}
               >
                 Започни

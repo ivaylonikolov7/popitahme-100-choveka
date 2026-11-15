@@ -98,6 +98,12 @@ export async function insertSubmission(row: Omit<StoredSubmission, "at">) {
   )
 }
 
+export async function deleteSubmission(id: string) {
+  await ensureTable()
+  const rows = await query<{ id: string }>("DELETE FROM survey_submissions WHERE id = $1 RETURNING id", [id])
+  return rows.length > 0
+}
+
 export function isUniqueViolation(error: unknown) {
   return typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "23505"
 }

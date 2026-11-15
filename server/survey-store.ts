@@ -3,7 +3,7 @@ import fs from "node:fs"
 import path from "node:path"
 import { SURVEY_QUESTIONS } from "../src/survey/questions.js"
 import { cleanRevolut, revolutOk } from "../src/survey/revolut.js"
-import { insertSubmission, isUniqueViolation, readSubmissions } from "./survey-db.js"
+import { insertSubmission, isUniqueViolation, readSubmissions, deleteSubmission } from "./survey-db.js"
 
 const dir = path.resolve("data")
 const keyFile = path.join(dir, "admin-key.txt")
@@ -71,6 +71,7 @@ export async function addSubmission(body: unknown): Promise<{ ok: true; code: st
   if (handle.length < 2) return { ok: false, error: "Напиши име или @ от Instagram." }
   const revolut = cleanRevolut((body as { revolut?: unknown }).revolut)
   if (!revolutOk(revolut)) return { ok: false, error: "Напиши Revolut tag или телефон." }
+  if ((body as { accepted?: unknown }).accepted !== true) return { ok: false, error: "Приеми бележката за данните." }
   const raw = (body as { answers?: unknown }).answers
   if (!Array.isArray(raw)) return { ok: false, error: "Липсват отговорите." }
   const byId = new Map<string, string>()
@@ -98,4 +99,11 @@ export async function addSubmission(body: unknown): Promise<{ ok: true; code: st
     }
   }
   return { ok: false, error: "Листчето не мина." }
+}
+
+export async function removeSubmission(id: unknown) {
+  if (typeof id !== "string" || !id.trim()) return { ok: false as const, error: "Липсва листчето." }
+  const removed = await deleteSubmission(id.trim())
+  if (!removed) return { ok: false as const, error: "Няма такова листче." }
+  return { ok: true as const }
 }

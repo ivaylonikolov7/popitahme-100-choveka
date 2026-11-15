@@ -498,6 +498,51 @@ select.dark-field {
   font-size: 1.15rem;
 }
 .field .btn { justify-self: start; margin-top: 8px; }
+.consent {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 16px;
+  color: var(--cream-dim);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+.consent input {
+  width: 1.2rem;
+  height: 1.2rem;
+  flex: 0 0 auto;
+  accent-color: var(--gold);
+}
+.terms-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--gold-2);
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.terms-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(10, 6, 4, 0.72);
+}
+.terms-pop {
+  width: min(440px, 100%);
+  max-height: min(82dvh, 640px);
+  overflow: auto;
+  background: var(--raise);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px 16px 8px;
+}
+.terms-pop h2 { font-size: 1.6rem; margin-bottom: 10px; }
+.terms-pop p { color: var(--cream-dim); line-height: 1.45; margin-bottom: 10px; }
+.terms-pop .dock { margin-top: 8px; }
 .ticket {
   font-family: Spectral, "Times New Roman", serif;
   font-size: 3rem;
@@ -516,11 +561,22 @@ select.dark-field {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 4px 12px;
+  align-items: center;
   padding: 8px 0;
   border-bottom: 1px solid var(--line);
 }
 .entries span { font-variant-numeric: tabular-nums; letter-spacing: 0.08em; color: var(--gold-2); }
 .entries small { color: var(--cream-dim); }
+.entries .btn { justify-self: end; }
+.slip-answers {
+  list-style: none;
+  padding: 8px 0 0;
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+.slip-answers li { display: flex; gap: 8px; color: var(--cream); }
+.slip-answers span { width: 1.2rem; color: var(--gold); }
 .tally { margin: 28px 0; }
 .tally h2 { font-size: 1.35rem; line-height: 1.15; margin-bottom: 8px; }
 .tally-row {

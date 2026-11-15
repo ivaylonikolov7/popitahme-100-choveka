@@ -1,4 +1,4 @@
-import { addSubmission, adminKey, keysMatch, readAll } from "./survey-store.js"
+import { addSubmission, adminKey, keysMatch, readAll, removeSubmission } from "./survey-store.js"
 
 const hits = new Map<string, number[]>()
 
@@ -33,6 +33,14 @@ export async function handleSurvey(input: { method: string; adminHeader: string;
       if (limited(input.ip)) return { status: 429, body: { error: "Много листчета от този телефон. Опитай по-късно." } }
       const result = await addSubmission(input.body)
       return { status: result.ok ? 200 : 400, body: result.ok ? { code: result.code } : { error: result.error } }
+    }
+    if (input.method === "DELETE") {
+      const expected = adminKey()
+      if (!expected) return { status: 500, body: { error: "Липсва SURVEY_ADMIN_KEY." } }
+      if (!keysMatch(input.adminHeader, expected)) return { status: 401, body: { error: "Грешен ключ." } }
+      const id = input.body && typeof input.body === "object" ? (input.body as { id?: unknown }).id : ""
+      const result = await removeSubmission(id)
+      return { status: result.ok ? 200 : 400, body: result.ok ? { ok: true } : { error: result.error } }
     }
     return { status: 405, body: { error: "Не става." } }
   } catch (error) {

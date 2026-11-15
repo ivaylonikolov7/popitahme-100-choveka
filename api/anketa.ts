@@ -42,7 +42,7 @@ async function readJson(req: NodeRequest) {
 
 export default async function handler(req: NodeRequest, res: NodeResponse) {
   try {
-    const body = req.method === "POST" ? await readJson(req) : null
+    const body = req.method === "POST" || req.method === "DELETE" ? await readJson(req) : null
     const result = await handleSurvey({ method: req.method ?? "GET", adminHeader: header(req), body, ip: clientIp(req) })
     res.status(result.status)
     res.setHeader("cache-control", "no-store")

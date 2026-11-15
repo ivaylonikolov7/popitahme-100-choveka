@@ -41,7 +41,7 @@ function attach(middlewares: Connect.Server) {
   middlewares.use("/api/anketa", (req, res) => {
     void (async () => {
       let body: unknown = null
-      if (req.method === "POST") {
+      if (req.method === "POST" || req.method === "DELETE") {
         const raw = await readBody(req)
         body = raw ? JSON.parse(raw) : null
       }
