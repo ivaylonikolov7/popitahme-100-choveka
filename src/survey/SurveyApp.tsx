@@ -134,8 +134,8 @@ export function SurveyApp() {
             <p className="lede">
               Листчето е прието. Ако те избера, ще ти пиша в Instagram. Последвай профила, за да мога да ти пратя съобщението. 20€ тръгват по Revolut, който написа.
             </p>
-            <a className="btn primary follow" href="https://www.instagram.com/popitahme100choveka/" target="_blank" rel="noopener noreferrer">
-              Последвай @popitahme100choveka
+            <a className="btn primary follow" href="https://www.instagram.com/barskidueel/" target="_blank" rel="noopener noreferrer">
+              Последвай @barskidueel
             </a>
           </>
         ) : step < 0 ? (
@@ -144,8 +144,8 @@ export function SurveyApp() {
             <p className="lede">
               На всеки въпрос можеш да напишеш няколко отговора. Можеш да спреш когато искаш. Колкото повече отговори дадеш, толкова по-голям е шансът. Ако те избера, ще ти пиша в Instagram.
             </p>
-            <a className="btn primary follow" href="https://www.instagram.com/popitahme100choveka/" target="_blank" rel="noopener noreferrer">
-              Последвай @popitahme100choveka
+            <a className="btn primary follow" href="https://www.instagram.com/barskidueel/" target="_blank" rel="noopener noreferrer">
+              Последвай @barskidueel
             </a>
             <label className="field">
               <span>Име или @ в Instagram</span>
@@ -186,17 +186,17 @@ export function SurveyApp() {
                   onClick={(event) => event.stopPropagation()}
                 >
                   <h2 id="terms-title">Условия за ползване</h2>
-                  <p>Анкетата е на @popitahme100choveka.</p>
+                  <p>Анкетата е на @barskidueel.</p>
                   <p>Пазя Instagram името, Revolut (tag или телефон) и отговорите.</p>
                   <p>
-                    Ползвам ги, за да видя най-честите отговори за играта и да избера един човек, на когото пращам 20€ по Revolut. Колкото повече отговори дадеш, толкова по-голям е шансът. Ако спечелиш, пиша ти в Instagram, затова последвай @popitahme100choveka. Аз избирам. Няма код и не всеки получава пари.
+                    Ползвам ги, за да видя най-честите отговори за играта и да избера един човек, на когото пращам 20€ по Revolut. Колкото повече отговори дадеш, толкова по-голям е шансът. Ако спечелиш, пиша ти в Instagram, затова последвай @barskidueel. Аз избирам. Няма код и не всеки получава пари.
                   </p>
                   <p>Листчето с името и Revolut го виждам само аз. Не го пускам публично, не го ползвам за реклама и не го давам на други.</p>
                   <p>
                     Самите отговори, без Instagram и без Revolut, ще ги ползвам после в барската игра. Там се вижда само кой отговор колко често е писан, не кой го е написал.
                   </p>
                   <p>
-                    Instagram името и Revolut трия, след като парите са изпратени. Ако отговорите са написани само колкото да се участва, мога да махна цялото листче и то не влиза в играта. Ако искаш твоя запис да изтрия или да ти го покажа по-рано, пиши на @popitahme100choveka.
+                    Instagram името и Revolut трия, след като парите са изпратени. Ако отговорите са написани само колкото да се участва, мога да махна цялото листче и то не влиза в играта. Ако искаш твоя запис да изтрия или да ти го покажа по-рано, пиши на @barskidueel.
                   </p>
                   <div className="dock">
                     <button type="button" className="btn ghost" onClick={() => setTermsOpen(false)}>
