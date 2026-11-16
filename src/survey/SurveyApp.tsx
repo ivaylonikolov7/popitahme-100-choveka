@@ -4,6 +4,28 @@ import { cleanRevolut, revolutOk } from "./revolut"
 
 const DRAFT_KEY = "bar-feuds-survey-draft"
 
+function InstagramFollow() {
+  return (
+    <a className="follow" href="https://www.instagram.com/barskidueel/" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <defs>
+          <radialGradient id="ig" cx="30%" cy="110%" r="150%">
+            <stop offset="0%" stopColor="#fdf497" />
+            <stop offset="45%" stopColor="#fd5949" />
+            <stop offset="60%" stopColor="#d6249f" />
+            <stop offset="90%" stopColor="#285AEB" />
+          </radialGradient>
+        </defs>
+        <rect x="1" y="1" width="22" height="22" rx="6" fill="url(#ig)" />
+        <rect x="6.15" y="6.15" width="11.7" height="11.7" rx="3.5" fill="none" stroke="#fff" strokeWidth="1.6" />
+        <circle cx="12" cy="12" r="2.55" fill="none" stroke="#fff" strokeWidth="1.6" />
+        <circle cx="16.35" cy="7.7" r="0.9" fill="#fff" />
+      </svg>
+      Последвай @barskidueel
+    </a>
+  )
+}
+
 const MAX_ANSWERS = 8
 
 type Draft = { handle: string; revolut: string; accepted: boolean; answers: string[][]; step: number }
@@ -134,9 +156,7 @@ export function SurveyApp() {
             <p className="lede">
               Листчето е прието. Ако те избера, ще ти пиша в Instagram. Последвай профила, за да мога да ти пратя съобщението. 20€ тръгват по Revolut, който написа.
             </p>
-            <a className="btn primary follow" href="https://www.instagram.com/barskidueel/" target="_blank" rel="noopener noreferrer">
-              Последвай @barskidueel
-            </a>
+            <InstagramFollow />
           </>
         ) : step < 0 ? (
           <>
@@ -144,9 +164,7 @@ export function SurveyApp() {
             <p className="lede">
               На всеки въпрос можеш да напишеш няколко отговора. Можеш да спреш когато искаш. Колкото повече отговори дадеш, толкова по-голям е шансът. Ако те избера, ще ти пиша в Instagram.
             </p>
-            <a className="btn primary follow" href="https://www.instagram.com/barskidueel/" target="_blank" rel="noopener noreferrer">
-              Последвай @barskidueel
-            </a>
+            <InstagramFollow />
             <label className="field">
               <span>Име или @ в Instagram</span>
               <input
