@@ -494,16 +494,16 @@ select.dark-field {
 }
 .survey .dock { margin-top: auto; padding-top: 18px; }
 .survey .follow {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   width: max-content;
   margin: 18px auto 0;
   color: var(--cream);
   text-decoration: none;
-  text-align: center;
 }
-.survey .follow svg { width: 46px; height: 46px; }
+.survey .follow svg { width: 40px; height: 40px; flex: 0 0 auto; }
 .answer-stack { display: grid; }
 .answer-stack .btn { justify-self: start; margin-top: 12px; }
 .field { display: grid; gap: 8px; margin: 18px 0 0; }
