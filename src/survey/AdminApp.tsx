@@ -7,7 +7,6 @@ type Submission = {
   id: string
   code: string
   handle: string
-  revolut?: string
   at: string
   answers: { id: string; text: string }[]
 }
@@ -115,16 +114,16 @@ export function AdminApp() {
             <p className="banner gold">
               {rows.length === 0
                 ? "Още няма листчета."
-                : `${rows.length} ${rows.length === 1 ? "листче" : "листчета"}. Избери човек по Instagram и Revolut и прати 20€ ръчно.`}
+                : `${rows.length} ${rows.length === 1 ? "листче" : "листчета"}. Избери човек по имейл и прати 20€ ръчно.`}
             </p>
             <h2>Хора</h2>
             <ul className="entries">
               {rows.map((row) => (
                 <li key={row.id}>
                   <div>
-                    <b>@{row.handle}</b>
+                    <b>{row.handle}</b>
                     <small>
-                      {row.answers.length} {row.answers.length === 1 ? "отговор" : "отговора"} · {row.revolut || "няма Revolut"}
+                      {row.answers.length} {row.answers.length === 1 ? "отговор" : "отговора"}
                     </small>
                     <ol className="slip-answers">
                       {SURVEY_QUESTIONS.flatMap((question, index) => {

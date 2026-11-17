@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { SURVEY_QUESTIONS } from "./questions"
-import { cleanRevolut, revolutOk } from "./revolut"
+import { cleanEmail, emailOk } from "./email"
 
 const DRAFT_KEY = "bar-feuds-survey-draft"
 
@@ -28,18 +28,18 @@ function InstagramFollow() {
 
 const MAX_ANSWERS = 8
 
-type Draft = { handle: string; revolut: string; accepted: boolean; answers: string[][]; step: number }
+type Draft = { email: string; accepted: boolean; answers: string[][]; step: number }
 
 function blankAnswers() {
   return SURVEY_QUESTIONS.map(() => [""])
 }
 
 function loadDraft(): Draft {
-  const empty = { handle: "", revolut: "", accepted: false, answers: blankAnswers(), step: -1 }
+  const empty = { email: "", accepted: false, answers: blankAnswers(), step: -1 }
   try {
     const raw = sessionStorage.getItem(DRAFT_KEY)
     if (!raw) return empty
-    const data = JSON.parse(raw) as { handle?: string; revolut?: string; accepted?: boolean; answers?: unknown[]; step?: number }
+    const data = JSON.parse(raw) as { email?: string; accepted?: boolean; answers?: unknown[]; step?: number }
     const answers = SURVEY_QUESTIONS.map((_, index) => {
       const item = data.answers?.[index]
       if (Array.isArray(item)) {
@@ -48,11 +48,11 @@ function loadDraft(): Draft {
       }
       return typeof item === "string" ? [item] : [""]
     })
-    const revolut = data.revolut ?? ""
+    const email = cleanEmail(data.email)
     const accepted = data.accepted === true
-    const ready = accepted && revolutOk(cleanRevolut(revolut))
+    const ready = accepted && emailOk(email)
     const step = ready ? (data.step ?? -1) : -1
-    return { handle: data.handle ?? "", revolut, accepted, answers, step }
+    return { email, accepted, answers, step }
   } catch {
     return empty
   }
@@ -93,8 +93,7 @@ export function SurveyApp() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          handle: draft.handle,
-          revolut: draft.revolut,
+          email: draft.email,
           accepted: draft.accepted,
           answers: SURVEY_QUESTIONS.flatMap((item, index) =>
             (draft.answers[index] ?? []).flatMap((value) => {
@@ -154,7 +153,7 @@ export function SurveyApp() {
           <>
             <h1>Готово.</h1>
             <p className="lede">
-              Листчето е прието. Ако те избера, ще ти пиша в Instagram. Последвай профила, за да мога да ти пратя съобщението. 20€ тръгват по Revolut, който написа.
+              Листчето е прието. Ако те избера, ще ти пиша на имейла.
             </p>
             <InstagramFollow />
           </>
@@ -162,26 +161,18 @@ export function SurveyApp() {
           <>
             <h1>Дванайсет въпроса. 20€ за един човек.</h1>
             <p className="lede">
-              На всеки въпрос можеш да напишеш няколко отговора. Можеш да спреш когато искаш. Колкото повече отговори дадеш, толкова по-голям е шансът. Ако те избера, ще ти пиша в Instagram.
+              На всеки въпрос можеш да напишеш няколко отговора. Можеш да спреш когато искаш. Колкото повече отговори дадеш, толкова по-голям е шансът. Ако те избера, ще ти пиша на имейла.
             </p>
             <InstagramFollow />
             <label className="field">
-              <span>Име или @ в Instagram</span>
+              <span>Имейл</span>
               <input
-                value={draft.handle}
-                autoComplete="nickname"
-                placeholder="@ime"
-                onChange={(event) => setDraft({ ...draft, handle: event.target.value })}
-              />
-            </label>
-            <label className="field">
-              <span>Revolut tag или телефон</span>
-              <input
-                value={draft.revolut}
-                autoComplete="tel"
-                inputMode="text"
-                placeholder="@revtag или +359..."
-                onChange={(event) => setDraft({ ...draft, revolut: event.target.value })}
+                type="email"
+                value={draft.email}
+                autoComplete="email"
+                inputMode="email"
+                placeholder="ime@email.com"
+                onChange={(event) => setDraft({ ...draft, email: event.target.value })}
               />
             </label>
             <label className="consent">
@@ -205,16 +196,16 @@ export function SurveyApp() {
                 >
                   <h2 id="terms-title">Условия за ползване</h2>
                   <p>Анкетата е на @barskidueel.</p>
-                  <p>Пазя Instagram името, Revolut (tag или телефон) и отговорите.</p>
+                  <p>Пазя имейла и отговорите.</p>
                   <p>
-                    Ползвам ги, за да видя най-честите отговори за играта и да избера един човек, на когото пращам 20€ по Revolut. Колкото повече отговори дадеш, толкова по-голям е шансът. Ако спечелиш, пиша ти в Instagram, затова последвай @barskidueel. Аз избирам. Няма код и не всеки получава пари.
+                    Ползвам ги, за да видя най-честите отговори за играта и да избера един човек, на когото пращам 20€. Колкото повече отговори дадеш, толкова по-голям е шансът. Ако спечелиш, пиша ти на имейла. Аз избирам. Няма код и не всеки получава пари.
                   </p>
-                  <p>Листчето с името и Revolut го виждам само аз. Не го пускам публично, не го ползвам за реклама и не го давам на други.</p>
+                  <p>Листчето с имейла го виждам само аз. Не го пускам публично, не го ползвам за реклама и не го давам на други.</p>
                   <p>
-                    Самите отговори, без Instagram и без Revolut, ще ги ползвам после в барската игра. Там се вижда само кой отговор колко често е писан, не кой го е написал.
+                    Самите отговори, без имейл, ще ги ползвам после в барската игра. Там се вижда само кой отговор колко често е писан, не кой го е написал.
                   </p>
                   <p>
-                    Instagram името и Revolut трия, след като парите са изпратени. Ако отговорите са написани само колкото да се участва, мога да махна цялото листче и то не влиза в играта. Ако искаш твоя запис да изтрия или да ти го покажа по-рано, пиши на @barskidueel.
+                    Имейла трия, след като парите са изпратени. Ако отговорите са написани само колкото да се участва, мога да махна цялото листче и то не влиза в играта. Ако искаш твоя запис да изтрия или да ти го покажа по-рано, пиши на @barskidueel.
                   </p>
                   <div className="dock">
                     <button type="button" className="btn ghost" onClick={() => setTermsOpen(false)}>
@@ -239,9 +230,7 @@ export function SurveyApp() {
                 type="button"
                 className="btn primary"
                 disabled={
-                  !draft.accepted ||
-                  draft.handle.trim().replace(/^@+/, "").length < 2 ||
-                  !revolutOk(cleanRevolut(draft.revolut))
+                  !draft.accepted || !emailOk(cleanEmail(draft.email))
                 }
                 onClick={() => setDraft({ ...draft, step: 0 })}
               >

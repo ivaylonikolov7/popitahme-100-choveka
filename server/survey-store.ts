@@ -2,7 +2,7 @@ import crypto from "node:crypto"
 import fs from "node:fs"
 import path from "node:path"
 import { SURVEY_QUESTIONS } from "../src/survey/questions.js"
-import { cleanRevolut, revolutOk } from "../src/survey/revolut.js"
+import { cleanEmail, emailOk } from "../src/survey/email.js"
 import { insertSubmission, isUniqueViolation, readSubmissions, deleteSubmission } from "./survey-db.js"
 
 const dir = path.resolve("data")
@@ -45,11 +45,6 @@ export function readAll() {
   return readSubmissions()
 }
 
-function cleanHandle(value: unknown) {
-  if (typeof value !== "string") return ""
-  return value.trim().replace(/^@+/, "").slice(0, 40)
-}
-
 function cleanAnswer(value: unknown) {
   if (typeof value !== "string") return ""
   return value.trim().replace(/\s+/g, " ").slice(0, 80)
@@ -67,10 +62,8 @@ function makeCode(taken: Set<string>) {
 
 export async function addSubmission(body: unknown): Promise<{ ok: true; code: string } | { ok: false; error: string }> {
   if (!body || typeof body !== "object") return { ok: false, error: "Липсва листчето." }
-  const handle = cleanHandle((body as { handle?: unknown }).handle)
-  if (handle.length < 2) return { ok: false, error: "Напиши име или @ от Instagram." }
-  const revolut = cleanRevolut((body as { revolut?: unknown }).revolut)
-  if (!revolutOk(revolut)) return { ok: false, error: "Напиши Revolut tag или телефон." }
+  const handle = cleanEmail((body as { email?: unknown }).email)
+  if (!emailOk(handle)) return { ok: false, error: "Напиши имейл." }
   if ((body as { accepted?: unknown }).accepted !== true) return { ok: false, error: "Приеми бележката за данните." }
   const raw = (body as { answers?: unknown }).answers
   if (!Array.isArray(raw)) return { ok: false, error: "Липсват отговорите." }
@@ -92,7 +85,7 @@ export async function addSubmission(body: unknown): Promise<{ ok: true; code: st
     counts.set(id, used + 1)
     answers.push({ id, text })
   }
-  const submission = { id: crypto.randomUUID(), handle, revolut, answers }
+  const submission = { id: crypto.randomUUID(), handle, revolut: "", answers }
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const rows = await readAll()
     const code = makeCode(new Set(rows.map((row) => row.code)))
