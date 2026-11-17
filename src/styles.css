@@ -485,6 +485,12 @@ select.dark-field {
   padding: 22px 0 calc(24px + env(safe-area-inset-bottom));
 }
 .survey h1 { font-size: clamp(1.85rem, 8vw, 2.7rem); }
+.survey .home-ask { margin-top: 26px; }
+.survey .home-ask h2 {
+  font-size: clamp(1.45rem, 5.5vw, 1.9rem);
+  line-height: 1.05;
+  margin: 0.35rem 0 0;
+}
 .q-count {
   margin: 0;
   font-family: Spectral, "Times New Roman", serif;
@@ -493,6 +499,28 @@ select.dark-field {
   color: var(--gold-2);
 }
 .survey .dock { margin-top: auto; padding-top: 18px; }
+.survey-foot { margin-top: auto; padding-top: 18px; }
+.survey-foot .dock { margin-top: 0; padding-top: 0; }
+.progress {
+  height: 8px;
+  margin-top: 14px;
+  border-radius: 999px;
+  background: rgba(246, 234, 215, 0.1);
+  overflow: hidden;
+}
+.progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gold);
+  transition: width 0.25s ease;
+}
+.progress-note {
+  margin: 8px 0 0;
+  text-align: center;
+  color: var(--gold-2);
+  font-size: 0.92rem;
+}
 .survey .follow {
   display: flex;
   align-items: center;

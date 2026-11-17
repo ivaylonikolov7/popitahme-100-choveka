@@ -3,6 +3,7 @@ import { SURVEY_QUESTIONS } from "./questions";
 import { cleanEmail, emailOk } from "./email";
 
 const DRAFT_KEY = "bar-feuds-survey-draft";
+const EMAIL_STEP = SURVEY_QUESTIONS.length;
 
 function InstagramFollow() {
   return (
@@ -54,7 +55,60 @@ type Draft = {
   accepted: boolean;
   answers: string[][];
   step: number;
+  returnStep: number;
 };
+
+function Terms({
+  onClose,
+  onAccept,
+}: {
+  onClose: () => void;
+  onAccept: () => void;
+}) {
+  return (
+    <div className="terms-backdrop" onClick={onClose}>
+      <div
+        className="terms-pop"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="terms-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <h2 id="terms-title">Условия за ползване</h2>
+        <p>Анкетата е на @barskiduel.</p>
+        <p>Пазя имейла и отговорите.</p>
+        <p>
+          Ползвам ги, за да видя най-честите отговори за играта и да избера
+          един човек, на когото пращам 20€. Колкото повече отговори дадеш,
+          толкова по-голям е шансът. Ако спечелиш, пиша ти на имейла. Аз
+          избирам. Няма код и не всеки получава пари.
+        </p>
+        <p>
+          Листчето с имейла го виждам само аз. Не го пускам публично, не го
+          ползвам за реклама и не го давам на други.
+        </p>
+        <p>
+          Самите отговори, без имейл, ще ги ползвам после в барската игра. Там
+          се вижда само кой отговор колко често е писан, не кой го е написал.
+        </p>
+        <p>
+          Имейла трия, след като парите са изпратени. Ако отговорите са
+          написани само колкото да се участва, мога да махна цялото листче и то
+          не влиза в играта. Ако искаш твоя запис да изтрия или да ти го покажа
+          по-рано, пиши на @barskiduel.
+        </p>
+        <div className="dock">
+          <button type="button" className="btn ghost" onClick={onClose}>
+            Затвори
+          </button>
+          <button type="button" className="btn primary" onClick={onAccept}>
+            Съгласявам се
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function blankAnswers() {
   return SURVEY_QUESTIONS.map(() => [""]);
@@ -65,7 +119,8 @@ function loadDraft(): Draft {
     email: "",
     accepted: false,
     answers: blankAnswers(),
-    step: -1,
+    step: 0,
+    returnStep: 0,
   };
   try {
     const raw = sessionStorage.getItem(DRAFT_KEY);
@@ -75,6 +130,7 @@ function loadDraft(): Draft {
       accepted?: boolean;
       answers?: unknown[];
       step?: number;
+      returnStep?: number;
     };
     const answers = SURVEY_QUESTIONS.map((_, index) => {
       const item = data.answers?.[index];
@@ -88,9 +144,14 @@ function loadDraft(): Draft {
     });
     const email = cleanEmail(data.email);
     const accepted = data.accepted === true;
-    const ready = accepted && emailOk(email);
-    const step = ready ? (data.step ?? -1) : -1;
-    return { email, accepted, answers, step };
+    const last = SURVEY_QUESTIONS.length - 1;
+    const step =
+      typeof data.step === "number" && data.step >= 0 && data.step <= EMAIL_STEP
+        ? data.step
+        : 0;
+    const back = typeof data.returnStep === "number" ? data.returnStep : Math.min(Math.max(step, 0), last);
+    const returnStep = back >= 0 && back <= last ? back : 0;
+    return { email, accepted, answers, step, returnStep };
   } catch {
     return empty;
   }
@@ -123,6 +184,11 @@ export function SurveyApp() {
   function goNext() {
     if (step >= SURVEY_QUESTIONS.length - 1) return;
     setDraft({ ...draft, step: step + 1 });
+  }
+
+  function goToEmail() {
+    setError("");
+    setDraft({ ...draft, step: EMAIL_STEP, returnStep: step });
   }
   const question = step >= 0 ? SURVEY_QUESTIONS[step] : undefined;
 
@@ -198,15 +264,12 @@ export function SurveyApp() {
             </p>
             <InstagramFollow />
           </>
-        ) : step < 0 ? (
+        ) : step >= EMAIL_STEP ? (
           <>
-            <h1>Дванайсет въпроса. 20€ за един човек.</h1>
+            <h1>Имейл, и готово.</h1>
             <p className="lede">
-              На всеки въпрос можеш да напишеш няколко отговора. Можеш да спреш
-              когато искаш. Колкото повече отговори дадеш, толкова по-голям е
-              шансът. Ако те избера, ще ти пиша на имейла.
+              Ако те избера, пиша тук. Имейлът го виждам само аз.
             </p>
-            <InstagramFollow />
             <label className="field">
               <span>Имейл</span>
               <input
@@ -237,92 +300,66 @@ export function SurveyApp() {
               </button>
             </label>
             {termsOpen && (
-              <div
-                className="terms-backdrop"
-                onClick={() => setTermsOpen(false)}
-              >
-                <div
-                  className="terms-pop"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-labelledby="terms-title"
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <h2 id="terms-title">Условия за ползване</h2>
-                  <p>Анкетата е на @barskiduel.</p>
-                  <p>Пазя имейла и отговорите.</p>
-                  <p>
-                    Ползвам ги, за да видя най-честите отговори за играта и да
-                    избера един човек, на когото пращам 20€. Колкото повече
-                    отговори дадеш, толкова по-голям е шансът. Ако спечелиш,
-                    пиша ти на имейла. Аз избирам. Няма код и не всеки получава
-                    пари.
-                  </p>
-                  <p>
-                    Листчето с имейла го виждам само аз. Не го пускам публично,
-                    не го ползвам за реклама и не го давам на други.
-                  </p>
-                  <p>
-                    Самите отговори, без имейл, ще ги ползвам после в барската
-                    игра. Там се вижда само кой отговор колко често е писан, не
-                    кой го е написал.
-                  </p>
-                  <p>
-                    Имейла трия, след като парите са изпратени. Ако отговорите
-                    са написани само колкото да се участва, мога да махна цялото
-                    листче и то не влиза в играта. Ако искаш твоя запис да
-                    изтрия или да ти го покажа по-рано, пиши на @barskiduel.
-                  </p>
-                  <div className="dock">
-                    <button
-                      type="button"
-                      className="btn ghost"
-                      onClick={() => setTermsOpen(false)}
-                    >
-                      Затвори
-                    </button>
-                    <button
-                      type="button"
-                      className="btn primary"
-                      onClick={() => {
-                        setDraft({ ...draft, accepted: true });
-                        setTermsOpen(false);
-                      }}
-                    >
-                      Съгласявам се
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <Terms
+                onClose={() => setTermsOpen(false)}
+                onAccept={() => {
+                  setDraft({ ...draft, accepted: true });
+                  setTermsOpen(false);
+                }}
+              />
             )}
+            {error && <p className="banner">{error}</p>}
             <div className="dock">
               <button
                 type="button"
-                className="btn primary"
-                disabled={!draft.accepted || !emailOk(cleanEmail(draft.email))}
-                onClick={() => setDraft({ ...draft, step: 0 })}
+                className="btn ghost"
+                onClick={() => setDraft({ ...draft, step: draft.returnStep })}
               >
-                Започни
+                Назад
+              </button>
+              <button
+                type="button"
+                className="btn primary"
+                disabled={
+                  busy || !draft.accepted || !emailOk(cleanEmail(draft.email))
+                }
+                onClick={() => void send()}
+              >
+                {busy ? "Праща се…" : "Прати"}
               </button>
             </div>
           </>
         ) : (
           question && (
             <>
-              <p className="q-count">
-                {step + 1}/{SURVEY_QUESTIONS.length}
-              </p>
-              <p className="whisper">
-                Дадени {filled}. Колкото повече, толкова по-голям шанс.
-              </p>
-              <h1>{question.text}</h1>
+              {step === 0 && (
+                <>
+                  <h1>Дванайсет въпроса. 20€ за един човек.</h1>
+                  <p className="lede">
+                    На всеки въпрос можеш да напишеш няколко отговора. Можеш да
+                    спреш когато искаш. Колкото повече отговори дадеш, толкова
+                    по-голям е шансът. Ако те избера, ще ти пиша на имейла.
+                  </p>
+                </>
+              )}
+              <div className={step === 0 ? "home-ask" : undefined}>
+                <p className="q-count">
+                  {step + 1}/{SURVEY_QUESTIONS.length}
+                </p>
+                {step > 0 && (
+                  <p className="whisper">
+                    Дадени {filled}. Колкото повече, толкова по-голям шанс.
+                  </p>
+                )}
+                {step === 0 ? <h2>{question.text}</h2> : <h1>{question.text}</h1>}
+              </div>
               <div className="answer-stack">
                 {slots.map((value, index) => (
                   <label className="field" key={index}>
                     <span>Отговор {index + 1}</span>
                     <input
                       value={value}
-                      autoFocus={index === slots.length - 1}
+                      autoFocus={step > 0 && index === slots.length - 1}
                       maxLength={80}
                       enterKeyHint="next"
                       onChange={(event) => setSlot(index, event.target.value)}
@@ -354,32 +391,56 @@ export function SurveyApp() {
                 )}
               </div>
               {error && <p className="banner">{error}</p>}
-              <div className="dock">
-                <button
-                  type="button"
-                  className="btn ghost"
-                  onClick={() => setDraft({ ...draft, step: step - 1 })}
+              <div className="survey-foot">
+                <div className="dock">
+                  {step > 0 && (
+                    <button
+                      type="button"
+                      className="btn ghost"
+                      onClick={() => setDraft({ ...draft, step: step - 1 })}
+                    >
+                      Назад
+                    </button>
+                  )}
+                  {step >= 2 && step < SURVEY_QUESTIONS.length - 1 && (
+                    <button type="button" className="btn ghost" onClick={goToEmail}>
+                      Прати дотук
+                    </button>
+                  )}
+                  {step < SURVEY_QUESTIONS.length - 1 ? (
+                    <button
+                      type="button"
+                      className={current ? "btn primary" : "btn ghost"}
+                      onClick={goNext}
+                    >
+                      {current ? "Напред" : "Пропусни"}
+                    </button>
+                  ) : (
+                    <button type="button" className="btn primary" onClick={goToEmail}>
+                      Прати
+                    </button>
+                  )}
+                </div>
+                <div
+                  className="progress"
+                  role="progressbar"
+                  aria-valuemin={1}
+                  aria-valuemax={SURVEY_QUESTIONS.length}
+                  aria-valuenow={step + 1}
+                  aria-label={
+                    step < SURVEY_QUESTIONS.length - 1
+                      ? `Още ${SURVEY_QUESTIONS.length - step - 1} до края`
+                      : "Последен въпрос"
+                  }
                 >
-                  Назад
-                </button>
-                {step < SURVEY_QUESTIONS.length - 1 ? (
-                  <button
-                    type="button"
-                    className={current ? "btn primary" : "btn ghost"}
-                    onClick={goNext}
-                  >
-                    {current ? "Напред" : "Пропусни"}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="btn primary"
-                    disabled={busy}
-                    onClick={() => void send()}
-                  >
-                    {busy ? "Праща се…" : "Прати"}
-                  </button>
-                )}
+                  <span style={{ width: `${((step + 1) / SURVEY_QUESTIONS.length) * 100}%` }} />
+                </div>
+                <p className="progress-note">
+                  {step < SURVEY_QUESTIONS.length - 1
+                    ? `Още ${SURVEY_QUESTIONS.length - step - 1} до края`
+                    : "Последен въпрос"}
+                </p>
+                {step === 0 && <InstagramFollow />}
               </div>
             </>
           )
