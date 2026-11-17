@@ -85,6 +85,10 @@ export async function addSubmission(body: unknown): Promise<{ ok: true; code: st
     counts.set(id, used + 1)
     answers.push({ id, text })
   }
+  const covered = new Set(answers.map((answer) => answer.id))
+  if (SURVEY_QUESTIONS.some((question) => !covered.has(question.id))) {
+    return { ok: false, error: "Отговори и на дванайсетте въпроса." }
+  }
   const submission = { id: crypto.randomUUID(), handle, revolut: "", answers }
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const rows = await readAll()

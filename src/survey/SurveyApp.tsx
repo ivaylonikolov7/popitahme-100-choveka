@@ -79,9 +79,9 @@ function Terms({
         <p>Пазя имейла и отговорите.</p>
         <p>
           Ползвам ги, за да видя най-честите отговори за играта и да избера
-          един човек, на когото пращам 20€. Колкото повече отговори дадеш,
-          толкова по-голям е шансът. Ако спечелиш, пиша ти на имейла. Аз
-          избирам. Няма код и не всеки получава пари.
+          един човек, на когото пращам 20€. Трябват отговори и на дванайсетте
+          въпроса. Ако спечелиш, пиша ти на имейла. Аз избирам. Няма код и не
+          всеки получава пари.
         </p>
         <p>
           Листчето с имейла го виждам само аз. Не го пускам публично, не го
@@ -175,14 +175,10 @@ export function SurveyApp() {
 
   const step = draft.step;
   const slots = draft.answers[step] ?? [""];
-  const filled = draft.answers.reduce(
-    (count, row) => count + row.filter((item) => item.trim()).length,
-    0,
-  );
   const current = slots.some((item) => item.trim());
 
   function goNext() {
-    if (step >= SURVEY_QUESTIONS.length - 1) return;
+    if (!current || step >= SURVEY_QUESTIONS.length - 1) return;
     setDraft({ ...draft, step: step + 1 });
   }
 
@@ -193,6 +189,13 @@ export function SurveyApp() {
   const question = step >= 0 ? SURVEY_QUESTIONS[step] : undefined;
 
   async function send() {
+    const missing = SURVEY_QUESTIONS.some((_, index) =>
+      !(draft.answers[index] ?? []).some((value) => value.trim()),
+    );
+    if (missing) {
+      setError("Отговори и на дванайсетте въпроса.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -336,9 +339,8 @@ export function SurveyApp() {
                 <>
                   <h1>Дванайсет въпроса. 20€ за един човек.</h1>
                   <p className="lede">
-                    На всеки въпрос можеш да напишеш няколко отговора. Можеш да
-                    спреш когато искаш. Колкото повече отговори дадеш, толкова
-                    по-голям е шансът. Ако те избера, ще ти пиша на имейла.
+                    На всеки въпрос напиши поне един отговор. Трябват и
+                    дванайсетте. Ако те избера, ще ти пиша на имейла.
                   </p>
                 </>
               )}
@@ -348,7 +350,7 @@ export function SurveyApp() {
                 </p>
                 {step > 0 && (
                   <p className="whisper">
-                    Дадени {filled}. Колкото повече, толкова по-голям шанс.
+                    Попълнени {draft.answers.filter((row) => row.some((item) => item.trim())).length}/12
                   </p>
                 )}
                 {step === 0 ? <h2>{question.text}</h2> : <h1>{question.text}</h1>}
@@ -374,7 +376,7 @@ export function SurveyApp() {
                           addSlot();
                           return;
                         }
-                        if (step === SURVEY_QUESTIONS.length - 1) return;
+                        if (!current || step === SURVEY_QUESTIONS.length - 1) return;
                         goNext();
                       }}
                     />
@@ -402,21 +404,22 @@ export function SurveyApp() {
                       Назад
                     </button>
                   )}
-                  {step >= 2 && step < SURVEY_QUESTIONS.length - 1 && (
-                    <button type="button" className="btn ghost" onClick={goToEmail}>
-                      Прати дотук
-                    </button>
-                  )}
                   {step < SURVEY_QUESTIONS.length - 1 ? (
                     <button
                       type="button"
-                      className={current ? "btn primary" : "btn ghost"}
+                      className="btn primary"
+                      disabled={!current}
                       onClick={goNext}
                     >
-                      {current ? "Напред" : "Пропусни"}
+                      Напред
                     </button>
                   ) : (
-                    <button type="button" className="btn primary" onClick={goToEmail}>
+                    <button
+                      type="button"
+                      className="btn primary"
+                      disabled={!current}
+                      onClick={goToEmail}
+                    >
                       Прати
                     </button>
                   )}
