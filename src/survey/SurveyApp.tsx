@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { SURVEY_QUESTIONS } from "./questions";
 import { cleanEmail, emailOk } from "./email";
+import { SURVEY_OPEN } from "./open";
 
 const DRAFT_KEY = "bar-feuds-survey-draft";
 const EMAIL_STEP = SURVEY_QUESTIONS.length;
@@ -253,6 +254,19 @@ export function SurveyApp() {
       answers[current.step] = [...row, ""];
       return { ...current, answers };
     });
+  }
+
+  if (!SURVEY_OPEN) {
+    return (
+      <div className="app">
+        <main className="survey">
+          <p className="eyebrow">Барски дуел</p>
+          <h1>Анкетата е затворена.</h1>
+          <p className="lede">Събрахме 100 листчета. Повече не се приемат.</p>
+          <InstagramFollow />
+        </main>
+      </div>
+    );
   }
 
   return (

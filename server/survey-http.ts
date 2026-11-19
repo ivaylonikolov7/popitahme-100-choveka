@@ -1,3 +1,4 @@
+import { SURVEY_OPEN } from "../src/survey/open.js"
 import { addSubmission, adminKey, keysMatch, readAll, removeSubmission } from "./survey-store.js"
 
 const hits = new Map<string, number[]>()
@@ -30,6 +31,7 @@ export async function handleSurvey(input: { method: string; adminHeader: string;
       return { status: 200, body: { submissions: await readAll() } }
     }
     if (input.method === "POST") {
+      if (!SURVEY_OPEN) return { status: 403, body: { error: "Анкетата е затворена." } }
       if (limited(input.ip)) return { status: 429, body: { error: "Много листчета от този телефон. Опитай по-късно." } }
       const result = await addSubmission(input.body)
       return { status: result.ok ? 200 : 400, body: result.ok ? { code: result.code } : { error: result.error } }
